@@ -50,39 +50,7 @@ using gram_dict = std::unordered_map<std::string, int>;
  * assumption : assume 2 grams for now so make window sized fix and dont require a parameter
  * fold_dictiontary and unique_folds are empty before being used for the first time 
  */
-// 2_gram_builder_recursive_function(const std::string & input, int pointer, gram_dict & current_dictionary, gram_dict & best_dictionary) {
-//   //pseudocode
-  
-//   //if pointer + n has reached the end of the string
 
-//   if(pointer + 1 >= input.size()) {
-//     compare_dictionaries(current_dictionary, best_dictionary);
-//     return;
-//   }
-  
-//   // return the amount of duplicated n-grams
-
-//   //take a substring from pointer with size of n
-//   std::string substring = input.substr(pointer, 2);
-//   //increment the amount of times seeing this pattern
-//   fold_dictionary[substring]++;
-//   //call the recursive function
-//   //if this iteration had more folds then store the map and token string
-//   //decrement the amount of occurences of seeing this pattern
-//   //or increment the pointer by 1 and then repeat the same decision making process
-
-
-//   //determine the maximum folds between these two iterations and return the dictionary and new token string
-//   /*
-//   lets say theres a global best dictionary
-//   everytime we reach the end, we check if our current dictionary is better than the global best, if it is we set a new global best
-//   we don't really need to use the return state
-//   there is a local dictionary we pass
-//   the best dictionary will be returned
-//   */
-  
-//   return best_dictionary;
-// }
 
 bool operator < (const gram_dict & l, const gram_dict & r) {
   //count the total number of folds and return true if left has more and return r is 
@@ -105,6 +73,48 @@ bool operator > (const gram_dict & l, const gram_dict & r) {
   //count the total number of folds and return true if left has more and return r is 
   return r < l;
 }
+
+
+
+void two_gram_builder_recursive_function(const std::string & input, int pointer, gram_dict & current_dictionary, gram_dict & best_dictionary) {
+  //pseudocode
+  
+  //if pointer + n has reached the end of the string
+  //get the best dictionary
+  if(pointer + 1 >= input.size()) {
+    if(current_dictionary > best_dictionary) {
+      //i know this is a premature optimization but this just reads like 8000x better maybe a functino woulda been better.... but fuck it whatever
+      best_dictionary = current_dictionary;
+    }
+    return;
+  }
+  
+  // return the amount of duplicated n-grams
+
+  //take a substring from pointer with size of n
+  std::string substring = input.substr(pointer, 2);
+  //increment the amount of times seeing this pattern
+  current_dictionary[substring]++;
+  //call the recursive function
+  two_gram_builder_recursive_function(input, pointer + 2, current_dictionary, best_dictionary);
+  //decrement the amount of occurences of seeing this pattern
+  current_dictionary[substring]--;
+  //or increment the pointer by 1 and then repeat the same decision making process
+  two_gram_builder_recursive_function(input, pointer + 1, current_dictionary, best_dictionary);
+
+  //determine the maximum folds between these two iterations and return the dictionary and new token string
+  /*
+  lets say theres a global best dictionary
+  everytime we reach the end, we check if our current dictionary is better than the global best, if it is we set a new global best
+  we don't really need to use the return state
+  there is a local dictionary we pass
+  the best dictionary will be returned
+  */
+  
+  return;
+}
+
+
 
 /*
 ok so lets say this token folding method works
@@ -153,29 +163,38 @@ int main(int argc, char ** argv) {
   //gram_dict < operator overload
 
 
-  gram_dict a;
+  // gram_dict a;
   //a should have a count of 4
-  a.insert({"a", 2});
-  a.insert({"b", 4});
+  // a.insert({"a", 2});
+  // a.insert({"b", 4});
 
   //b should have a count of 3
-  gram_dict b;
-  b.insert({"a", 1});
-  b.insert({"b", 4});
-  //this should be false since b has less than a
-  std::cout << (a < b) << std::endl;
+  // gram_dict b;
+  // b.insert({"a", 1});
+  // b.insert({"b", 4});
+  // //this should be false since b has less than a
+  // std::cout << (a < b) << std::endl;
 
 
 
-  //b should have a count of 8 now
-  b.insert({"c", 6});
-  //this should be true since b has more than a now
-  std::cout << (a < b) << std::endl;
-  //this should be false since its just the "inverse" of the previous true statement
-  std::cout << (a > b) << std::endl;
+  // //b should have a count of 8 now
+  // b.insert({"c", 6});
+  // //this should be true since b has more than a now
+  // std::cout << (a < b) << std::endl;
+  // //this should be false since its just the "inverse" of the previous true statement
+  // std::cout << (a > b) << std::endl;
   
   
   // std::cout << return_string << std::endl;
+
+  gram_dict best_dict;
+  gram_dict current_dict;
+
+  two_gram_builder_recursive_function(s, 0, current_dict, best_dict);
+
+  for(auto k_v_pair : best_dict) {
+    std::cout << k_v_pair.first << " " << k_v_pair.second << std::endl;
+  }
 
 
   return 0;
